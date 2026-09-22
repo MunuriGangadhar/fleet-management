@@ -1,0 +1,133 @@
+import { useState, type FormEvent } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Truck, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { Button } from '@/components/ui/Button'
+import { FleetScene } from '@/components/auth/FleetScene'
+
+export default function LoginPage() {
+  const { session, signIn } = useAuth()
+  const location = useLocation()
+  const [email, setEmail] = useState('operator@fleetpulse.demo')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  if (session) {
+    const from = (location.state as { from?: Location })?.from?.pathname ?? '/dashboard'
+    return <Navigate to={from} replace />
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    const { error: signInError } = await signIn(email, password)
+    setLoading(false)
+    if (signInError) setError(signInError)
+  }
+
+  return (
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg-canvas)] px-4">
+      <FleetScene />
+
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full max-w-sm"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="mb-8 flex flex-col items-center gap-3"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent)] text-white shadow-[0_8px_24px_-4px_color-mix(in_srgb,var(--accent)_60%,transparent)]">
+            <Truck size={24} />
+          </div>
+          <div className="text-center">
+            <h1 className="text-lg font-semibold text-[var(--text-primary)]">FleetPulse</h1>
+            <p className="text-sm text-[var(--text-tertiary)]">Fleet operations dashboard</p>
+          </div>
+        </motion.div>
+
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="rounded-2xl border border-[var(--border-subtle)] bg-[color-mix(in_srgb,var(--bg-surface)_88%,transparent)] p-6 shadow-2xl backdrop-blur-xl"
+        >
+          <div className="mb-4">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">
+              Email
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-canvas)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent)]"
+              placeholder="you@company.com"
+              autoComplete="email"
+            />
+          </div>
+
+          <div className="mb-2">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-canvas)] px-3 py-2 pr-9 text-sm text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent)]"
+                placeholder="••••••••"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-3 text-xs text-[var(--danger)]"
+            >
+              {error}
+            </motion.p>
+          )}
+
+          <motion.div whileTap={{ scale: 0.98 }} className="mt-3">
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full"
+              loading={loading}
+              icon={!loading ? <ArrowRight size={14} /> : undefined}
+            >
+              Sign in
+            </Button>
+          </motion.div>
+
+          <p className="mt-4 text-center text-[11px] text-[var(--text-tertiary)]">
+            Demo credentials are printed by <code>npm run seed</code> and documented in the
+            project README.
+          </p>
+        </motion.form>
+      </motion.div>
+    </div>
+  )
+}
