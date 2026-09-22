@@ -59,9 +59,15 @@ tightly scoped and load-bearing rather than decorative:
 | **Smoothed live map markers** | Realtime position updates are tweened over ~900ms (`useAnimatedLatLng`) instead of snapping — a vehicle moving on the map reads as motion, not a teleport. |
 | **Cursor-driven 3D card tilt + motion choreography** | Stat cards, page transitions, and list entrances use `framer-motion` for a tactile, GPU-accelerated feel without a 3D engine (see Technical Decisions). |
 | **Dark / light theme** | Ops dashboards run on wall-mounted monitors and laptops alike. |
+| **Self-service signup with admin approval** | New operators can request access instead of every account being hand-provisioned — but nobody sees fleet data until an admin approves them. See §5, Access Control. |
+| **Admin panel** | Approve/reject signups, promote/demote roles, suspend accounts — a real internal tool needs an owner who can manage who has access, not just an owner who *is* the access. |
 
 ### Intended operator workflow
 
+0. New operator? **Request access** from the login screen — full name, work
+   email, password. The account is created immediately but sits `pending`
+   until an admin approves it from the **Admin** panel; nothing about the
+   fleet is visible until then.
 1. Log in → land on the **Dashboard**: stat row flags how many vehicles need
    attention, the map shows everyone's current position, the vehicle list is
    sorted worst-health-first by default.
@@ -81,9 +87,13 @@ tightly scoped and load-bearing rather than decorative:
 
 - **URL:** _fill in after deploying — see Deployment below_
 - **Login:** the credentials printed by `npm run seed` (defaults below unless
-  overridden in `.env`):
+  overridden in `.env`) — this account is seeded as an **admin**, so you'll
+  see the Admin panel in the sidebar:
   - Email: `operator@fleetpulse.demo`
   - Password: `FleetDemo!2024`
+- **Trying the signup flow:** click "Request access" on the login screen to
+  create a second, non-admin account — it'll sit `pending` until you approve
+  it from **Admin → Users** while logged in as the demo account.
 
 ### Deployment (Vercel, recommended)
 
@@ -196,7 +206,10 @@ npm run seed
 This is a TypeScript script (`scripts/seed.ts`, run via `tsx`) that, using
 the service-role key:
 
-1. Creates (or reuses) the demo login user.
+1. Creates (or reuses) the demo login user, and explicitly promotes it to
+   `role='admin'`, `status='active'` — this is what makes it usable as your
+   first admin, able to approve any real signups from the Admin panel (see
+   §5, Access control).
 2. Clears any previous seed data so the script is idempotent.
 3. Inserts 11 drivers and 14 vehicles (trucks, vans, cars, EV bikes — some
    fuel-powered, some battery-powered, on purpose — see §5).
@@ -291,20 +304,48 @@ JSON blob column:
   of fetching every `alerts`/`trips` row and reducing it in JS — the pattern
   that keeps working once the fleet is 50x bigger, not just at 14 vehicles.
 
-### Row Level Security
+### Access control: signup, approval, and roles
 
-This is a single-tenant internal ops tool, not multi-customer SaaS, so the
-policy design is deliberately simple:
+This is a single-tenant internal ops tool, not multi-customer SaaS, so
+there's no per-row customer isolation to design — but it does have real
+accounts now (self-signup), so **who gets to see the fleet at all** became
+an actual access-control problem rather than "everyone who's authenticated."
 
-- Every table: `SELECT` allowed for any `authenticated` user — an operator is
-  trusted to see the whole fleet.
-- **Writes are locked down.** Only two client-initiated writes exist in the
-  whole app: resolving an alert (`UPDATE` on `alerts`, policy-permitted
-  directly) and the live-simulation tick (a `SECURITY DEFINER` RPC, so it can
-  update `vehicles` without granting a blanket `UPDATE` policy on that
-  table). Everything else — the entire seed dataset — is written with the
-  service-role key, server-side, never from the browser.
-- `profiles` is the exception: a user can only `SELECT`/`UPDATE` their own row.
+- **`profiles.status`** (`pending` / `active` / `rejected` / `suspended`)
+  gates everything. A brand-new signup has a valid Supabase Auth session
+  the instant they sign up (or confirm their email) — RLS is what actually
+  stops them from seeing anything, not the UI. Every fleet-data `SELECT`
+  policy requires `is_active_user()`; `ProtectedRoute` additionally shows a
+  friendly "pending approval" screen client-side, but that's a UX nicety,
+  not the security boundary.
+- **Two `SECURITY DEFINER` helper functions** (`is_active_user()`,
+  `is_admin()`) check the *calling* user's own profile without RLS
+  recursion — a plain subquery against `profiles` from inside a `profiles`
+  policy is a well-known recursion trap; a `SECURITY DEFINER` function
+  sidesteps it cleanly and is the pattern Supabase itself recommends.
+- **New profiles never trust client-supplied role/status.** The
+  `handle_new_user()` trigger hard-codes `role='operator'`,
+  `status='pending'` for every self-signup — it deliberately does **not**
+  read `raw_user_meta_data->>'role'` anymore. Earlier in this project it
+  did, which — once public signup existed — would have let anyone call
+  `supabase.auth.signUp()` with `{ data: { role: 'admin' } }` and grant
+  themselves admin. Caught and fixed while adding signup, not after.
+- **Bootstrapping the first admin** is a real chicken-and-egg problem
+  (every self-signup starts pending; nobody can approve them without an
+  admin; there's no admin without an approval). `scripts/seed.ts` solves it
+  by explicitly promoting the demo account to `role='admin'`,
+  `status='active'` with the service-role key right after creating it —
+  documented here rather than left as an unexplained special case.
+- **Writes stay locked down otherwise.** Only three client-initiated writes
+  exist: resolving an alert, the live-simulation tick (`SECURITY DEFINER`
+  RPC, additionally self-checks `is_active_user()` since a definer function
+  bypasses RLS and could otherwise be called directly by a pending account),
+  and an admin updating another user's `role`/`status`. Everything else —
+  the entire seed dataset — is written with the service-role key,
+  server-side, never from the browser.
+- A user can always `SELECT`/`UPDATE` their own `profiles` row (Postgres
+  RLS policies on the same table OR together); admins additionally get
+  blanket `SELECT`/`UPDATE` on every profile via `is_admin()`.
 
 ### Map library
 

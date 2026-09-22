@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Truck, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -122,7 +122,14 @@ export default function LoginPage() {
             </Button>
           </motion.div>
 
-          <p className="mt-4 text-center text-[11px] text-[var(--text-tertiary)]">
+          <p className="mt-4 text-center text-xs text-[var(--text-tertiary)]">
+            New here?{' '}
+            <Link to="/signup" className="font-medium text-[var(--accent)]">
+              Request access
+            </Link>
+          </p>
+
+          <p className="mt-3 text-center text-[11px] text-[var(--text-tertiary)]">
             Demo credentials are printed by <code>npm run seed</code> and documented in the
             project README.
           </p>
