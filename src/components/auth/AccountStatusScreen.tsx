@@ -27,11 +27,6 @@ const CONTENT: Record<
   },
 }
 
-// Falls back gracefully for any status value this build doesn't recognize
-// (a mid-migration database, a new status added server-side before the
-// client shipped its copy, etc.) instead of throwing — a screen that's
-// meant to be the safe landing spot for "something about your account
-// isn't normal yet" shouldn't itself be the thing that crashes.
 const FALLBACK = {
   icon: ShieldQuestion,
   title: "Your account isn't active yet",

@@ -49,7 +49,6 @@ export function VehicleListPanel({
     withHealth.sort((a, b) => {
       if (sortKey === 'health') return a.health - b.health
       if (sortKey === 'name') return a.v.registration_number.localeCompare(b.v.registration_number)
-      // recent
       const at = a.v.last_seen_at ? new Date(a.v.last_seen_at).getTime() : 0
       const bt = b.v.last_seen_at ? new Date(b.v.last_seen_at).getTime() : 0
       return bt - at

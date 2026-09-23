@@ -2,9 +2,6 @@ import L from 'leaflet'
 import { VEHICLE_STATUS_COLOR } from '@/lib/constants'
 import type { VehicleStatus } from '@/types/database'
 
-// Resolve CSS custom properties to concrete color values so they can be
-// baked into an inline SVG string (divIcon HTML doesn't inherit page CSS
-// variables reliably across Leaflet's panes).
 function resolveColor(cssVar: string): string {
   if (typeof window === 'undefined') return '#888'
   const match = cssVar.match(/var\((--[a-z-]+)\)/)

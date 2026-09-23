@@ -10,11 +10,6 @@ interface State {
   error: Error | null
 }
 
-/**
- * Catches render-time exceptions in a page (a malformed API response, a
- * bad date, whatever) so one broken page shows a recoverable error card
- * instead of taking down the whole app to a blank white screen.
- */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { error: null }
 

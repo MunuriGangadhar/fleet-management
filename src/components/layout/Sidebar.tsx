@@ -70,8 +70,8 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto px-5 py-4 text-[11px] text-[var(--text-tertiary)]">
-        <p>Fleet Ops Prototype</p>
-        <p>Bengaluru region · demo data</p>
+        <p>Fleet Operations</p>
+        <p>Bengaluru region</p>
       </div>
     </aside>
   )

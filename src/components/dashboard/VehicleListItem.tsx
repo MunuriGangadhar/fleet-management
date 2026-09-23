@@ -40,11 +40,6 @@ export function VehicleListItem({
     >
       <HealthGauge breakdown={health} size={38} showLabel={false} />
 
-      {/* Registration number gets its own full-width row so it's never
-          squeezed by the status badge — `truncate` strips an element's
-          intrinsic min-width, so putting it next to a nowrap badge in the
-          same flex row let the badge win all the space and crush this to
-          a few characters. Each competing element now gets its own row. */}
       <div className="min-w-0 flex-1">
         <p
           className="truncate text-sm font-semibold text-[var(--text-primary)]"

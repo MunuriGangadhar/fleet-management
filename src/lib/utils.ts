@@ -5,16 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return clsx(inputs)
 }
 
-export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371
-  const dLat = ((lat2 - lat1) * Math.PI) / 180
-  const dLng = ((lng2 - lng1) * Math.PI) / 180
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
 export function formatDistance(km: number): string {
   return `${km.toFixed(1)} km`
 }
@@ -45,9 +35,4 @@ export function formatOdometer(km: number): string {
 
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
-}
-
-export function roundTo(value: number, decimals: number): number {
-  const factor = 10 ** decimals
-  return Math.round(value * factor) / factor
 }

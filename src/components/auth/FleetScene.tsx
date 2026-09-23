@@ -10,9 +10,6 @@ interface Blip {
   size: number
 }
 
-// Deterministic pseudo-random layout so the scene doesn't reshuffle on
-// every re-render/HMR — a fixed seed of "vehicle" blips scattered across
-// the 3D floor grid at varying depths.
 const BLIPS: Blip[] = Array.from({ length: 22 }, (_, i) => {
   const seed = Math.sin(i * 12.9898) * 43758.5453
   const frac = seed - Math.floor(seed)
@@ -28,14 +25,6 @@ const BLIPS: Blip[] = Array.from({ length: 22 }, (_, i) => {
   }
 })
 
-/**
- * A GPU-accelerated, pure-CSS 3D scene for the login screen: a perspective
- * floor grid with parallax that follows the cursor, plus floating vehicle
- * "blips" drifting at different depths. Deliberately not a real 3D engine
- * (react-three-fiber pulls in Three.js and currently conflicts with React
- * 19.3 peer ranges) — CSS transforms give the same visual payoff for a
- * decorative surface at a fraction of the bundle cost.
- */
 export function FleetScene() {
   const containerRef = useRef<HTMLDivElement>(null)
   const mouseX = useMotionValue(0)
@@ -63,14 +52,12 @@ export function FleetScene() {
       className="absolute inset-0 overflow-hidden"
       style={{ perspective: 1200 }}
     >
-      {/* ambient glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,color-mix(in_srgb,var(--accent)_22%,transparent),transparent)]" />
 
       <motion.div
         style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
         className="absolute inset-0"
       >
-        {/* perspective floor grid, tilted back in 3D space */}
         <motion.div
           className="absolute left-1/2 top-[58%] h-[140%] w-[220%] -translate-x-1/2"
           style={{
@@ -87,7 +74,6 @@ export function FleetScene() {
           }}
         />
 
-        {/* floating vehicle blips at varying depths */}
         {BLIPS.map((b) => (
           <motion.div
             key={b.id}
@@ -115,7 +101,6 @@ export function FleetScene() {
         ))}
       </motion.div>
 
-      {/* vignette so the login card stays readable */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-canvas)]" />
     </div>
   )

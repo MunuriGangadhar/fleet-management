@@ -23,9 +23,6 @@ export function useDrivers() {
   return useQuery({
     queryKey: QUERY_KEYS.drivers,
     queryFn: async () => {
-      // Trip aggregation (count/distance/overspeed events per driver) happens
-      // in Postgres via the driver_trip_stats view (schema.sql §8), not by
-      // pulling every trip row and reducing it here.
       const [driversRes, vehiclesRes, statsRes] = await Promise.all([
         supabase.from('drivers').select('*').order('name', { ascending: true }),
         supabase.from('vehicles').select('id, registration_number, name, driver_id'),

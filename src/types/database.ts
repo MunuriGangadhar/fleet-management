@@ -1,7 +1,3 @@
-// Hand-written mirror of the Supabase Postgres schema defined in supabase/schema.sql.
-// Kept in sync manually for this project instead of `supabase gen types` so the
-// assignment can be reviewed without a Supabase CLI login.
-
 export type VehicleType = 'truck' | 'van' | 'car' | 'bike'
 export type VehicleStatus = 'active' | 'idle' | 'maintenance' | 'offline'
 export type DriverStatus = 'active' | 'on_leave' | 'inactive'

@@ -26,7 +26,7 @@ export function AppShell() {
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar title={title} subtitle={subtitle} />
           <main className="relative flex-1 overflow-y-auto">
-            <ErrorBoundary>
+            <ErrorBoundary key={location.pathname}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={location.pathname}

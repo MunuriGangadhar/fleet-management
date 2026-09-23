@@ -23,9 +23,6 @@ export default function VehicleDetailPage() {
   const { data: vehicle, isLoading } = useVehicle(id)
   const { data: trips } = useTripsForVehicle(id)
   const { data: maintenanceLogs } = useMaintenanceForVehicle(id)
-  // Same query AlertsFeed below issues for this vehicle — shares its cache
-  // entry rather than firing a second request — used here to feed the
-  // health score with this vehicle's real open-alert count/severity.
   const { data: vehicleAlerts } = useAlerts({ vehicleId: id })
 
   usePageTitle(

@@ -37,9 +37,6 @@ function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v))
 }
 
-// A handful of waypoints between `from` and `to`, nudged sideways so the
-// generated route isn't a perfectly straight line — a cheap stand-in for
-// following actual roads without needing a routing API.
 function buildWaypoints(from: NamedLocation, to: NamedLocation): NamedLocation[] {
   const legs = randomInt(1, 2)
   const waypoints: NamedLocation[] = [from]
@@ -91,11 +88,6 @@ export function generateTrip(
   const lengths = segmentLengths(waypoints)
   const totalKm = lengths.reduce((a, b) => a + b, 0)
 
-  // Chosen so cruiseSpeed + the -9/+7 random variance below stays under
-  // SPEED_LIMIT (60) during ordinary cruising — car/van previously used 62,
-  // which is already at the limit, so the resampled-every-~15s noise pushed
-  // it over constantly and registered dozens of false "overspeed events"
-  // from normal driving instead of just the one deliberate burst per trip.
   const cruiseSpeed = vehicleType === 'truck' ? 52 : vehicleType === 'bike' ? 46 : 50
   const accelZoneKm = Math.min(0.6, totalKm * 0.15)
   const decelZoneKm = Math.min(0.6, totalKm * 0.15)
@@ -120,7 +112,6 @@ export function generateTrip(
   let haltIdx = 0
   let lastHeading = bearing(waypoints[0].lat, waypoints[0].lng, waypoints[1].lat, waypoints[1].lng)
 
-  // Initial point at trip origin.
   points.push({
     ts: new Date(cursorMs).toISOString(),
     lat: from.lat,
@@ -186,7 +177,6 @@ export function generateTrip(
     })
   }
 
-  // Final point exactly at destination.
   cursorMs += 12_000
   points.push({
     ts: new Date(cursorMs).toISOString(),

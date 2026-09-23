@@ -9,12 +9,6 @@ import { VEHICLE_STATUS_COLOR, VEHICLE_STATUS_LABEL } from '@/lib/constants'
 import { formatRelativeTime, formatSpeed } from '@/lib/utils'
 import type { VehicleWithRelations } from '@/types/domain'
 
-/**
- * One marker per vehicle, in its own component so each gets an independent
- * useAnimatedLatLng instance — calling that hook inside a .map() callback in
- * the parent would break the rules of hooks the moment the vehicle count
- * changes between renders.
- */
 export function VehicleMapMarker({
   vehicle,
   selected,

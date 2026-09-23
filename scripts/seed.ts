@@ -1,14 +1,3 @@
-// One-shot seed script for the FleetPulse Supabase backend.
-//
-// Run with: npm run seed
-//
-// Uses the service-role key (server-side only, bypasses RLS) to:
-//   1. create/reuse a demo auth user you can log in with
-//   2. wipe and repopulate drivers, vehicles, geofences, trips, trip_points,
-//      alerts, and maintenance_logs with a plausible week of fleet activity
-//
-// Safe to re-run — it clears its own tables first.
-
 import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 import { DRIVERS_SEED, VEHICLES_SEED } from './lib/fleetData'
@@ -77,8 +66,6 @@ async function ensureDemoUser(): Promise<string> {
   } else if (createError && !/already been registered|already exists/i.test(createError.message)) {
     throw createError
   } else {
-    // User already exists — look it up and make sure the password matches
-    // what's in .env, so `npm run seed` remains a reliable way to get in.
     userId = ''
     let page = 1
     while (true) {
@@ -96,14 +83,6 @@ async function ensureDemoUser(): Promise<string> {
     if (!userId) throw new Error(`Could not find or create demo user ${DEMO_EMAIL}`)
   }
 
-  // The handle_new_user() trigger always creates new profiles as
-  // role='operator', status='pending' — it never trusts client-supplied
-  // metadata for role/status (that would be a privilege-escalation hole
-  // now that self-signup exists). So the demo account is bootstrapped into
-  // an active admin here explicitly, using the service-role key. This is
-  // also what makes the demo account useful as the *first* admin: without
-  // it, every self-signup would be stuck pending with nobody able to
-  // approve them.
   const { error: promoteError } = await supabase
     .from('profiles')
     .update({ full_name: 'Ops Manager', email: DEMO_EMAIL, role: 'admin', status: 'active' })
@@ -133,15 +112,13 @@ interface VehicleInsertResult {
 async function seedVehicles(drivers: { id: string }[]) {
   console.log(`Inserting ${VEHICLES_SEED.length} vehicles...`)
 
-  // Status distribution: mostly on the road, a couple idle, a couple in
-  // for service, one dark — enough variety for the dashboard to feel real.
   const statusCycle: VehicleInsertResult['status'][] = [
     'active', 'active', 'idle', 'active', 'active', 'maintenance', 'active',
     'idle', 'active', 'active', 'maintenance', 'active', 'offline', 'active',
   ]
 
   const rows = VEHICLES_SEED.map((v, i) => {
-    const driver = i < drivers.length - 2 ? drivers[i] : null // leave a few unassigned
+    const driver = i < drivers.length - 2 ? drivers[i] : null
     const status = statusCycle[i % statusCycle.length]
     const startingOdometer = randomInt(12_000, 78_000)
     return {
@@ -212,7 +189,6 @@ async function seedTripsForFleet(vehicles: VehicleInsertResult[]) {
     let fuelLevel: number | null = null
     let batteryLevel: number | null = null
 
-    // Spread trips across the last 6 days, oldest first.
     const daysAgoStarts = Array.from({ length: tripCount }, (_, i) =>
       now - randomBetween(0.1, 6) * 86_400_000 - i * 3_600_000,
     ).sort((a, b) => a - b)
@@ -231,8 +207,6 @@ async function seedTripsForFleet(vehicles: VehicleInsertResult[]) {
       let tripId = crypto.randomUUID()
 
       if (makeOngoing) {
-        // Truncate to a random cut point so the vehicle looks "mid-trip"
-        // right now, which is what makes the live map interesting.
         const cutoff = Math.max(3, Math.round(generated.points.length * randomBetween(0.35, 0.75)))
         const truncatedPoints = generated.points.slice(0, cutoff)
         tripForInsert = {
@@ -284,7 +258,6 @@ async function seedTripsForFleet(vehicles: VehicleInsertResult[]) {
       odometerAccum += tripForInsert.summary.distance_km
       cursor = makeOngoing ? cursor : to
 
-      // Fuel/battery drain roughly proportional to distance covered.
       const consumptionRate =
         vehicle.vehicle_type === 'truck' ? 0.22 : vehicle.vehicle_type === 'van' ? 0.18 : vehicle.vehicle_type === 'car' ? 0.13 : 0.28
       if (vehicle.isEV) {
@@ -364,7 +337,6 @@ async function finalizeVehiclesAndAlerts(
       })
       .eq('id', vehicle.id)
 
-    // ── Alerts ──
     if (state.fuelLevel !== null && state.fuelLevel < 25) {
       alertRows.push({
         vehicle_id: vehicle.id,
@@ -415,7 +387,6 @@ async function finalizeVehiclesAndAlerts(
       })
     }
 
-    // ── Maintenance logs ──
     const services =
       vehicle.vehicle_type === 'bike'
         ? [

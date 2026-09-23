@@ -9,7 +9,7 @@ import { FleetScene } from '@/components/auth/FleetScene'
 export default function LoginPage() {
   const { session, signIn } = useAuth()
   const location = useLocation()
-  const [email, setEmail] = useState('operator@fleetpulse.demo')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -127,11 +127,6 @@ export default function LoginPage() {
             <Link to="/signup" className="font-medium text-[var(--accent)]">
               Request access
             </Link>
-          </p>
-
-          <p className="mt-3 text-center text-[11px] text-[var(--text-tertiary)]">
-            Demo credentials are printed by <code>npm run seed</code> and documented in the
-            project README.
           </p>
         </motion.form>
       </motion.div>

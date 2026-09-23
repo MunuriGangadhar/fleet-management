@@ -3,13 +3,6 @@ import { supabase } from '@/lib/supabase'
 
 const TICK_MS = 4000
 
-/**
- * Drives the "Live simulation" toggle in the topbar. While enabled, calls
- * the `advance_fleet_simulation` Postgres RPC every few seconds, which moves
- * a couple of active vehicles a small step further along their current
- * trip's route and nudges telemetry. Combined with useRealtimeVehicles,
- * this is what makes the fleet map feel alive rather than a static seed.
- */
 export function useLiveSimulation() {
   const [isRunning, setIsRunning] = useState(false)
   const [lastTickAt, setLastTickAt] = useState<Date | null>(null)
@@ -19,9 +12,6 @@ export function useLiveSimulation() {
   const tick = useCallback(async () => {
     const { error: rpcError } = await supabase.rpc('advance_fleet_simulation')
     if (rpcError) {
-      // Stop rather than silently retrying every 4s — a broken RPC (e.g. the
-      // schema migration hasn't been run yet) shouldn't spam failed requests
-      // while the toggle keeps showing "on".
       setError(rpcError.message)
       setIsRunning(false)
       return

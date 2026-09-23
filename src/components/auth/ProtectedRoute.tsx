@@ -20,8 +20,6 @@ export function ProtectedRoute() {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Session exists but the profile row hasn't loaded yet — avoid a flash of
-  // the "pending approval" screen before we actually know the real status.
   if (profileLoading || !profile) return <FullScreenSpinner />
 
   if (profile.status !== 'active') {

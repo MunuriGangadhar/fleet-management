@@ -1,7 +1,5 @@
 import type { AlertSeverity, AlertType, VehicleStatus, VehicleType } from '@/types/database'
 
-export const SPEED_LIMIT_KMH = 60
-
 export const VEHICLE_STATUS_LABEL: Record<VehicleStatus, string> = {
   active: 'Active',
   idle: 'Idle',
@@ -46,8 +44,6 @@ export const ALERT_SEVERITY_COLOR: Record<AlertSeverity, string> = {
   low: 'var(--info)',
 }
 
-// Roughly the Bengaluru metro area — used to bound the seeded demo fleet's
-// depot location and geofences. Purely illustrative for the prototype.
 export const DEPOT = {
   name: 'Whitefield Depot',
   lat: 12.9698,

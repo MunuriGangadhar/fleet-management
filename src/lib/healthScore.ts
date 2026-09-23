@@ -14,18 +14,6 @@ export interface HealthScoreBreakdown {
   factors: string[]
 }
 
-/**
- * Composite 0–100 fleet-health score. Recomputed on the client from live
- * vehicle telemetry + open alerts + maintenance status, rather than trusting
- * a possibly-stale stored column, so the dashboard reflects reality the
- * instant an alert is raised or resolved.
- *
- * Takes an alert *count + highest severity* rather than the full alert list
- * on purpose — that's exactly what `vehicle_open_alert_summary` (see
- * schema.sql §8) gives the fleet list/map/stats views without shipping
- * every alert row to the browser. Vehicle detail pages, which do load the
- * full per-vehicle alert list, derive the same two numbers from it.
- */
 export function computeHealthScore(
   vehicle: Pick<VehicleRow, 'fuel_level' | 'battery_level' | 'status' | 'last_seen_at'>,
   openAlerts: { count: number; highestSeverity: AlertRow['severity'] | null },

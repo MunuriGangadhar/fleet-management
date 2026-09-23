@@ -18,18 +18,3 @@ export function useMaintenanceForVehicle(vehicleId: string | undefined) {
     },
   })
 }
-
-export function useAllMaintenance() {
-  return useQuery({
-    queryKey: ['maintenance', 'all'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('maintenance_logs')
-        .select('*, vehicle:vehicles(id, registration_number, name)')
-        .order('next_due_date', { ascending: true })
-      if (error) throw error
-      return data
-    },
-    staleTime: 30_000,
-  })
-}

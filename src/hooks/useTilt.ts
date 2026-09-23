@@ -1,11 +1,6 @@
 import { useMotionValue, useSpring } from 'framer-motion'
 import type { MouseEvent } from 'react'
 
-/**
- * Cursor-driven 3D tilt for a card — rotateX/rotateY spring toward the
- * pointer position within the element and spring back to flat on leave.
- * Pure CSS transform under the hood (GPU-accelerated), no 3D scene graph.
- */
 export function useTilt(maxDegrees = 8) {
   const rotateX = useMotionValue(0)
   const rotateY = useMotionValue(0)

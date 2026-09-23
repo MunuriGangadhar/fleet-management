@@ -18,8 +18,6 @@ interface AlertSummaryRow {
 }
 
 async function fetchVehiclesWithRelations(): Promise<VehicleWithRelations[]> {
-  // Alert counts/severity are aggregated in Postgres (vehicle_open_alert_summary
-  // view) rather than fetched row-by-row and reduced here — see schema.sql §8.
   const [vehiclesRes, summaryRes] = await Promise.all([
     supabase
       .from('vehicles')

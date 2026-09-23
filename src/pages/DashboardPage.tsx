@@ -18,7 +18,9 @@ export default function DashboardPage() {
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | undefined>(undefined)
 
   const attentionCount =
-    vehicles?.filter((v) => v.highest_open_severity === 'critical').length ?? 0
+    vehicles?.filter(
+      (v) => v.highest_open_severity === 'critical' || v.highest_open_severity === 'high',
+    ).length ?? 0
 
   if (isLoading || !vehicles) {
     return (

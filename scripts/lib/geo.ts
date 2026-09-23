@@ -1,15 +1,9 @@
-// Standalone geo helpers for the seed script. Deliberately not imported from
-// src/lib/utils.ts — this script runs under tsx outside the Vite/tsconfig
-// path-alias resolution, so it stays dependency-free from the app bundle.
-
 export interface NamedLocation {
   name: string
   lat: number
   lng: number
 }
 
-// A spread of real Bengaluru localities, used as plausible trip endpoints
-// and to keep the seeded routes roughly road-shaped rather than arbitrary.
 export const LOCATIONS: NamedLocation[] = [
   { name: 'Whitefield Depot', lat: 12.9698, lng: 77.75 },
   { name: 'Electronic City', lat: 12.8452, lng: 77.6602 },

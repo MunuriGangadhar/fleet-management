@@ -46,8 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const userId = session?.user?.id
+
   useEffect(() => {
-    if (!session?.user) {
+    if (!userId) {
       setProfile(null)
       setProfileLoading(false)
       return
@@ -57,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase
       .from('profiles')
       .select('*')
-      .eq('id', session.user.id)
+      .eq('id', userId)
       .maybeSingle()
       .then(({ data }) => {
         if (!mounted) return
@@ -67,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       mounted = false
     }
-  }, [session?.user])
+  }, [userId])
 
   async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -82,8 +84,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     return {
       error: error?.message ?? null,
-      // If email confirmation is enabled on this Supabase project, signUp()
-      // succeeds but returns no session until the user clicks the link.
       needsEmailConfirmation: !error && !data.session,
     }
   }

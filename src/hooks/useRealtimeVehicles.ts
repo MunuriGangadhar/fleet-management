@@ -5,13 +5,6 @@ import { QUERY_KEYS } from '@/lib/constants'
 import type { VehicleRow } from '@/types/database'
 import type { VehicleWithRelations } from '@/types/domain'
 
-/**
- * Subscribes to Postgres change events on `vehicles` via Supabase Realtime
- * and patches the React Query cache in place, so every open tab sees a
- * vehicle's position/telemetry move live without polling or a full refetch.
- * Requires `vehicles` to be added to the `supabase_realtime` publication
- * (done in supabase/schema.sql).
- */
 export function useRealtimeVehicles() {
   const queryClient = useQueryClient()
 
